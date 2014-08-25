@@ -3,10 +3,11 @@ no Markovisation of rules and no annotation of internal symbols.
 
 ## Learn Grammar
 1. Read Treebank Trees (texpr)
-2. Binarize Trees
-3. Read Grammar Off Trees
-4. Output 2NF Rules With Probability
-5. Calculate and output nullable symbols and inverse unary relations with probabilities
+2. Remove function tags (“-LOC” etc) and “-NONE” elements
+3. Binarize Trees
+4. Read Grammar Off Trees
+5. Output 2NF Rules With Probability
+6. Calculate and output nullable symbols and inverse unary relations with probabilities
 
 ## Parse Input
 1. Read Grammar
