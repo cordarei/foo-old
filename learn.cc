@@ -76,10 +76,6 @@ tree read_texpr(std::istream &in) {
 }
 
 
-/*
- * Usage: learn <trees> <out>
- */
-
 int main(int argc, char** argv)
 {
   int count = 0;
