@@ -60,7 +60,12 @@ tree read_texpr(std::istream &in) {
 	  stack.pop_back();
 
 	  if (stack.empty()) {
-	    return t; //this assumes that nothing is left in `buff`
+	    //this assumes that nothing is left in `buff`
+	    if (t.label.empty() && t.children.size() == 1) {
+	      return t.children[0];
+	    } else {
+	      return t;
+	    }
 	  } else {
 	    stack.back().children.push_back(t);
 	  }
