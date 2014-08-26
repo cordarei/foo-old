@@ -130,6 +130,25 @@ std::ostream& operator<<(std::ostream &out, const tree &t) {
   return out;
 }
 
+/*
+ * simplify tree - remove function tags, indices, and empty elements
+ *
+ * This is destructive! It will modify the tree in place.
+ */
+void simplify_tree(tree &t) {
+  t.label = t.label.substr(0, t.label.find('-'));
+  for (auto &c : t.children) {
+    if (c.label != "-NONE-" && c.children.size() > 0)
+      simplify_tree(c);
+  }
+}
+
+/*
+ * binarize tree - return a new tree in which each node has at most two children
+ */
+tree binarize_tree(const tree &t) {
+  return t;
+}
 
 int main(int argc, char** argv) {
   int count = 0;
@@ -137,6 +156,10 @@ int main(int argc, char** argv) {
     while (true) {
       auto t = read_texpr(std::cin);
       ++count;
+      std::cout << "Read tree:" << std::endl;
+      std::cout << t << std::endl;
+      simplify_tree(t);
+      std::cout << "Simplified tree:" << std::endl;
       std::cout << t << std::endl;
     }
   } catch(std::runtime_error e) {
