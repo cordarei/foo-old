@@ -105,7 +105,15 @@ std::ostream& operator<<(std::ostream &out, const tree &t) {
 		  << ')'
 		  << std::endl;
       } else {
-	stack.emplace_back(p.first, &p.second->children[0]);
+	stack.emplace_back(p.first, nullptr);
+	if (!p.second->label.empty()) {
+	  std::cout << '('
+		    << p.second->label
+		    << std::endl;
+	  stack.emplace_back(p.first + 2, &p.second->children[0]);
+	} else {
+	  stack.emplace_back(p.first, &p.second->children[0]);
+	}
       }
     } else if (p.second->children.size() > 1) {
       stack.emplace_back(p.first, nullptr);
