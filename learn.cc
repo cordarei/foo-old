@@ -12,6 +12,17 @@ struct tree {
   tree(std::string l, std::vector<tree> c) : label(l), children(c) {}
 };
 
+void swap(tree &left, tree &right) {
+  std::string ts;
+  std::vector<tree> tv;
+  swap(left.label, ts);
+  swap(left.children, tv);
+  swap(left.label, right.label);
+  swap(left.children, right.children);
+  swap(right.label, ts);
+  swap(right.children, tv);
+}
+
 
 /*
  * Read a tree-expression from the input stream.
@@ -143,11 +154,51 @@ void simplify_tree(tree &t) {
   }
 }
 
+
 /*
  * binarize tree - return a new tree in which each node has at most two children
  */
 tree binarize_tree(const tree &t) {
-  return t;
+  switch(t.children.size()) {
+  case 0:
+    return tree(t.label, {});
+  case 1:
+    return tree(t.label, {binarize_tree(t.children[0])});
+  case 2:
+    return tree(t.label, {binarize_tree(t.children[0]),
+	                  binarize_tree(t.children[1])});
+  default:
+    break;
+  }
+
+  tree empty{"", {}};
+  tree root{t.label, {empty, empty}};
+
+  tree *parent = &root;
+  std::vector<tree> children;
+  children.reserve(t.children.size());
+  for (auto const &c : t.children)
+    children.push_back(binarize_tree(c));
+
+  while (children.size() > 2) {
+    swap(parent->children[0], children.front());
+    children.erase(children.begin());
+
+    std::string lbl;
+    for (auto const &c : children) {
+      lbl += c.label;
+      lbl += "|";
+    }
+    lbl.erase(lbl.size() - 1);
+
+    tree left{lbl, {empty, empty}};
+    swap(parent->children[1], left);
+    parent = &parent->children[1];
+  }
+
+  swap(parent->children, children);
+
+  return root;
 }
 
 int main(int argc, char** argv) {
@@ -161,6 +212,9 @@ int main(int argc, char** argv) {
       simplify_tree(t);
       std::cout << "Simplified tree:" << std::endl;
       std::cout << t << std::endl;
+      auto b = binarize_tree(t);
+      std::cout << "Binarized tree:" << std::endl;
+      std::cout << b << std::endl;
     }
   } catch(std::runtime_error e) {
     std::cout << e.what() << std::endl;
