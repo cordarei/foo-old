@@ -104,23 +104,23 @@ std::ostream& operator<<(std::ostream &out, const tree &t) {
     auto p = stack.back();
     stack.pop_back();
     for (int i = p.first; i > 0; --i)
-      std::cout << ' ';
+      out << ' ';
     if (!p.second) {
-      std::cout << ')' << std::endl;
+      out << ')' << std::endl;
     } else if (p.second->children.size() == 1) {
       if (p.second->children[0].children.size() == 0) {
-        std::cout << '('
-                  << p.second->label
-                  << ' '
-                  << p.second->children[0].label
-                  << ')'
-                  << std::endl;
+        out << '('
+	    << p.second->label
+	    << ' '
+	    << p.second->children[0].label
+	    << ')'
+	    << std::endl;
       } else {
         stack.emplace_back(p.first, nullptr);
         if (!p.second->label.empty()) {
-          std::cout << '('
-                    << p.second->label
-                    << std::endl;
+          out << '('
+	      << p.second->label
+	      << std::endl;
           stack.emplace_back(p.first + 2, &p.second->children[0]);
         } else {
           stack.emplace_back(p.first, &p.second->children[0]);
@@ -128,13 +128,13 @@ std::ostream& operator<<(std::ostream &out, const tree &t) {
       }
     } else if (p.second->children.size() > 1) {
       stack.emplace_back(p.first, nullptr);
-      std::cout << '('
-                << p.second->label
-                << std::endl;
+      out << '('
+	  << p.second->label
+	  << std::endl;
       for (auto it = p.second->children.rbegin(); it != p.second->children.rend(); ++it)
         stack.emplace_back(p.first + 2, &*it);
     } else {
-      std::cout << "wtf??" << std::endl;
+      out << "wtf??" << std::endl;
     }
   }
 
