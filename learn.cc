@@ -205,20 +205,20 @@ int main(int argc, char** argv) {
     while (true) {
       auto t = read_texpr(std::cin);
       ++count;
-      std::cout << "Read tree:" << std::endl;
-      std::cout << t << std::endl;
+      std::cerr << "Read tree:" << std::endl;
+      std::cerr << t << std::endl;
       simplify_tree(t);
-      std::cout << "Simplified tree:" << std::endl;
-      std::cout << t << std::endl;
+      std::cerr << "Simplified tree:" << std::endl;
+      std::cerr << t << std::endl;
       auto b = binarize_tree(t);
-      std::cout << "Binarized tree:" << std::endl;
-      std::cout << b << std::endl;
+      std::cerr << "Binarized tree:" << std::endl;
+      std::cerr << b << std::endl;
     }
   } catch(std::runtime_error e) {
-    std::cout << e.what() << std::endl;
+    std::cerr << e.what() << std::endl;
   }
 
-  std::cout << count << " trees read." << std::endl;
+  std::cerr << count << " trees read." << std::endl;
 
   return 0;
 }
