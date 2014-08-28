@@ -44,8 +44,6 @@ tree read_texpr(std::istream &in) {
     auto cur = buff.cbegin();
     auto end = buff.cend();
 
-    // std::cerr << "# " << buff << std::endl;
-
     while (cur != end) {
       auto next_paren = std::find_if(cur, end, [](char c) { return c == '(' or c == ')'; });
       if (cur < next_paren) {
