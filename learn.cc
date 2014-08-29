@@ -146,8 +146,17 @@ std::ostream& operator<<(std::ostream &out, const tree &t) {
  */
 void simplify_tree(tree &t) {
   t.label = t.label.substr(0, t.label.find('-'));
+
+  t.children.erase(
+                   std::remove_if(t.children.begin(),
+                                  t.children.end(),
+                                  [](auto const& c) { return c.label == "-NONE-"; }),
+                   t.children.end());
+  if (t.children.empty())
+    t.label = "-NONE-";
+
   for (auto &c : t.children) {
-    if (c.label != "-NONE-" && c.children.size() > 0)
+    if (c.children.size() > 0)
       simplify_tree(c);
   }
 }

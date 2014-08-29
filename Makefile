@@ -1,7 +1,7 @@
 
 
 learn: learn.cc
-	g++ -std=c++11 learn.cc -o learn
+	g++ -std=c++1y learn.cc -o learn
 
 clean:
 	rm learn
