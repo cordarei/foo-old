@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <stdexcept>
 #include <utility>
 
@@ -145,22 +146,38 @@ std::ostream& operator<<(std::ostream &out, const tree &t) {
  * This is destructive! It will modify the tree in place.
  */
 void simplify_tree(tree &t) {
-  t.label = t.label.substr(0, t.label.find('-'));
-
-  t.children.erase(
-                   std::remove_if(t.children.begin(),
-                                  t.children.end(),
-                                  [](auto const& c) { return c.label == "-NONE-"; }),
-                   t.children.end());
-  if (t.children.empty())
-    t.label = "-NONE-";
+  if (t.children.size() == 1 && t.children[0].children.empty())
+    return;
 
   for (auto &c : t.children) {
     if (c.children.size() > 0)
       simplify_tree(c);
   }
+
+  t.children.erase(std::remove_if(t.children.begin(),
+                                  t.children.end(),
+                                  [](auto const& c) { return c.label == "-NONE-"; }),
+                   t.children.end());
+
+  if (t.children.empty()) {
+    t.label = "-NONE-";
+  } else {
+    t.label = t.label.substr(0, t.label.find('-'));
+    t.label = t.label.substr(0, t.label.find('='));
+  }
 }
 
+
+template <typename Collection, typename Projection>
+std::string join(Collection const &c, std::string const &delim, Projection const &p) {
+  std::string result;
+  for (auto const &el : c) {
+    result += p(el);
+    result += delim;
+  }
+  result.erase(result.size() - 1);
+  return result;
+}
 
 /*
  * binarize tree - return a new tree in which each node has at most two children
@@ -208,8 +225,25 @@ tree binarize_tree(const tree &t) {
   return root;
 }
 
+typedef std::unordered_map<
+  std::string,
+  std::unordered_map<std::string, size_t>
+  > rule_count_t;
+
+void update_rule_counts(tree const &t, rule_count_t &counts) {
+  if (t.children.size() == 1 && t.children[0].children.empty())
+    return;
+
+  std::string rhs = join(t.children, " ", [](tree const &c) { return c.label; });
+  ++counts[t.label][rhs];
+  for (auto const &c : t.children)
+    update_rule_counts(c, counts);
+}
+
 int main(int argc, char** argv) {
   int count = 0;
+  rule_count_t rule_counts;
+
   try {
     while (true) {
       auto t = read_texpr(std::cin);
@@ -222,12 +256,34 @@ int main(int argc, char** argv) {
       auto b = binarize_tree(t);
       std::cerr << "Binarized tree:" << std::endl;
       std::cerr << b << std::endl;
+      update_rule_counts(b, rule_counts);
     }
   } catch(std::runtime_error e) {
     std::cerr << e.what() << std::endl;
   }
 
   std::cerr << count << " trees read." << std::endl;
+
+  size_t total_count = 0;
+  for (auto const &i : rule_counts) {
+    float left_count = 0;
+    for (auto const &j : i.second) left_count += j.second;
+    std::cerr << i.first << " " << i.second.size() << " " << left_count << std::endl;
+
+    for (auto const &j : i.second) {
+      std::cerr << i.first
+                << " -> "
+                << j.first
+                << " "
+                << j.second
+                << " "
+                << j.second / left_count
+                << std::endl;
+      total_count += j.second;
+    }
+  }
+
+  std::cerr << total_count << " rules." << std::endl;
 
   return 0;
 }
