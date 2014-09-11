@@ -162,8 +162,15 @@ void simplify_tree(tree &t) {
   if (t.children.empty()) {
     t.label = "-NONE-";
   } else {
+    /*
+     * '-' separates the nonterminal label from functional tags and
+     * coreference indicies; '=' is used to add indices for parallel
+     * constructions; and '|' separates ambiguous tags (only 2
+     * instances in version 2 of PTB)
+     */
     t.label = t.label.substr(0, t.label.find('-'));
     t.label = t.label.substr(0, t.label.find('='));
+    t.label = t.label.substr(0, t.label.find('|'));
   }
 }
 
