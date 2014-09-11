@@ -271,26 +271,37 @@ int main(int argc, char** argv) {
 
   std::cerr << count << " trees read." << std::endl;
 
-  size_t total_count = 0;
+  std::vector<std::pair<std::string, std::string> > unary_relations;
+
+  size_t num_rules = 0;
+  for (auto const &i : rule_counts)
+    num_rules += i.second.size();
+
+  std::cout << num_rules << std::endl;
+
   for (auto const &i : rule_counts) {
     float left_count = 0;
     for (auto const &j : i.second) left_count += j.second;
+
     std::cerr << i.first << " " << i.second.size() << " " << left_count << std::endl;
 
     for (auto const &j : i.second) {
-      std::cerr << i.first
+      std::cout << i.first
                 << " -> "
                 << j.first
-                << " "
-                << j.second
-                << " "
+                << "	"
                 << j.second / left_count
                 << std::endl;
-      total_count += j.second;
+
+      if (j.first.find(' ') == std::string::npos) {
+        unary_relations.emplace_back(i.first, j.first);
+      }
     }
   }
 
-  std::cerr << total_count << " rules." << std::endl;
+  std::cout << unary_relations.size() << std::endl;
+  for (auto const &p : unary_relations)
+    std::cout << p.second << " " << p.first << std::endl;
 
   return 0;
 }
