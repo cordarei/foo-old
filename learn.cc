@@ -4,7 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <stdexcept>
-#include <utility>
+#include <tuple>
 
 
 struct tree {
@@ -271,7 +271,7 @@ int main(int argc, char** argv) {
 
   std::cerr << count << " trees read." << std::endl;
 
-  std::vector<std::pair<std::string, std::string> > unary_relations;
+  std::vector<std::tuple<std::string, std::string, double> > unary_relations;
 
   size_t num_rules = 0;
   for (auto const &i : rule_counts)
@@ -294,14 +294,14 @@ int main(int argc, char** argv) {
                 << std::endl;
 
       if (j.first.find(' ') == std::string::npos) {
-        unary_relations.emplace_back(i.first, j.first);
+        unary_relations.emplace_back(i.first, j.first, j.second / left_count);
       }
     }
   }
 
   std::cout << unary_relations.size() << std::endl;
-  for (auto const &p : unary_relations)
-    std::cout << p.second << " " << p.first << std::endl;
+  for (auto const &tpl : unary_relations)
+    std::cout << std::get<1>(tpl) << " " << std::get<0>(tpl) << " " << std::get<2>(tpl) << std::endl;
 
   return 0;
 }
