@@ -271,13 +271,9 @@ int main(int argc, char** argv) {
 
   std::cerr << count << " trees read." << std::endl;
 
-  std::vector<std::tuple<std::string, std::string, double> > unary_relations;
-
   size_t num_rules = 0;
   for (auto const &i : rule_counts)
     num_rules += i.second.size();
-
-  std::cout << num_rules << std::endl;
 
   for (auto const &i : rule_counts) {
     float left_count = 0;
@@ -292,16 +288,8 @@ int main(int argc, char** argv) {
                 << "	"
                 << j.second / left_count
                 << std::endl;
-
-      if (j.first.find(' ') == std::string::npos) {
-        unary_relations.emplace_back(i.first, j.first, j.second / left_count);
-      }
     }
   }
-
-  std::cout << unary_relations.size() << std::endl;
-  for (auto const &tpl : unary_relations)
-    std::cout << std::get<1>(tpl) << " " << std::get<0>(tpl) << " " << std::get<2>(tpl) << std::endl;
 
   return 0;
 }
