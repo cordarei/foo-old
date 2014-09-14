@@ -69,8 +69,8 @@ public:
   }
 
   cell_type& cell(size_t i, size_t j) {
-    assert(i < j);
-    return _chart[i][j-i];
+    assert(j != 0);
+    return _chart[i][j - 1];
   }
   weighted_symbol_t& symbol(size_t i, size_t j, std::string symbol) {
     return *find_symbol(cell(i, j), symbol);
@@ -165,28 +165,33 @@ int main(int argc, char** argv) {
   chart_t chart(tokens.size());
 
   for (size_t i = 0; i < tokens.size(); ++i) {
-    chart.cell(i, i).emplace_back(tokens[i].second, 1.0);
-    auto reachable = reachable_unary_symbols(chart.cell(i, i).back(), unary_rules);
+    chart.cell(i, 1).emplace_back(tokens[i].second, 1.0);
+    auto reachable = reachable_unary_symbols(chart.cell(i, 1).back(), unary_rules);
     for (auto const &s : reachable) {
-      chart.update(i, i, s);
+      chart.update(i, 1, s);
     }
   }
 
-  for (size_t j = 2; j < tokens.size(); ++j) {
-    for (size_t i = 0; i < (tokens.size() - j); ++i) {
+  for (size_t j = 2; j <= tokens.size(); ++j) {
+    for (size_t i = 0; i <= (tokens.size() - j); ++i) {
       for (size_t k = 1; k < j; ++k) {
         for (auto const &rule : binary_rules) {
           //check rule
-          if (chart.check_symbol(i, i + k, rule.rhs().first)
+          if (chart.check_symbol(i, k, rule.rhs().first)
               && chart.check_symbol(i + k, j - k, rule.rhs().second)) {
 
             probability_t p = rule.prob()
-              * chart.symbol(i, i+k, rule.rhs().first).prob()
-              * chart.symbol(i+k, j - k, rule.rhs().second).prob();
+              * chart.symbol(i, k, rule.rhs().first).prob()
+              * chart.symbol(i + k, j - k, rule.rhs().second).prob();
 
             weighted_symbol_t symbol(rule.lhs(), p);
 
-            chart.update(i, i + j, symbol);
+            chart.update(i, j, symbol);
+
+            auto reachable = reachable_unary_symbols(symbol, unary_rules);
+            for (auto const &s : reachable) {
+              chart.update(i, j, s);
+            }
           }
         }
       }
