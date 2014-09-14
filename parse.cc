@@ -77,7 +77,7 @@ public:
   }
 
   void update(size_t i, size_t j, weighted_symbol_t const &s) {
-    auto c = cell(i,j);
+    auto &c = cell(i,j);
     auto it = find_symbol(c, s.symbol());
     if (it == c.end()) {
       c.push_back(s);
@@ -106,6 +106,8 @@ std::vector<weighted_symbol_t> reachable_unary_symbols(weighted_symbol_t symbol,
   std::vector<weighted_symbol_t> reachable;
   std::vector<weighted_symbol_t> queue{symbol};
 
+  // std::cerr << "reachable_unary_symbols(<" << symbol.symbol() << "," << symbol.prob() << ">)" << std::endl;
+
   while (!queue.empty()) {
     for (auto const &rule : unary_rules) {
       auto match = [&](weighted_symbol_t s){return s.symbol() == rule.lhs();};
@@ -119,6 +121,14 @@ std::vector<weighted_symbol_t> reachable_unary_symbols(weighted_symbol_t symbol,
     }
     queue.erase(queue.begin());
   }
+
+  // std::cerr << "reachable: ";
+  // for (auto const &s : reachable) {
+  //   std::cerr << "<" << s.symbol() << "," << s.prob() << "> ";
+  // }
+  // std::cerr << std::endl;
+
+  return reachable;
 }
 
 
@@ -131,29 +141,33 @@ int main(int argc, char** argv) {
     exit(-1);
   }
 
+  std::cerr << "reading rules..." << std::endl;
   std::ifstream rule_file(argv[1]);
   std::string line;
   while (std::getline(rule_file, line)) {
     auto tabpos = line.find('	');
-    auto prob = stof(line.substr(tabpos));
+    auto prob = stof(line.substr(tabpos + 1));
 
     auto pos = line.find(' ');
     std::string lhs = line.substr(0, pos);
 
-    pos = line.find(' ', pos + 1);
-    auto pos2 = line.find(' ', pos + 1);
+    pos = line.find(' ', pos + 1) + 1;
+    auto pos2 = line.find(' ', pos);
 
     if (pos2 != std::string::npos) {
       //binary rule
       std::string rhs1 = line.substr(pos, pos2 - pos);
-      std::string rhs2 = line.substr(pos2, tabpos - pos2);
+      std::string rhs2 = line.substr(pos2 + 1, tabpos - pos2 - 1);
       binary_rules.emplace_back(lhs, rhs1, rhs2, prob);
+      // std::cerr << "binary rule:<" << lhs << ">=<" << rhs1 << "><" << rhs2 << ">\n";
     } else {
       //unary rule
       std::string rhs = line.substr(pos, tabpos - pos);
       unary_rules.emplace_back(lhs, rhs, prob);
+      // std::cerr << "unary rule:<" << lhs << ">=<" << rhs << ">\n";
     }
   }
+  std::cerr << "finished reading rules." << std::endl;
 
   /* format: <word> <pos_tag> */
   std::vector<std::pair<std::string, std::string> > tokens;
@@ -162,7 +176,11 @@ int main(int argc, char** argv) {
     tokens.emplace_back(line.substr(0, pos), line.substr(pos + 1));
   }
 
+  std::cerr << "finished reading " << tokens.size() << " tokens." << std::endl;
+
   chart_t chart(tokens.size());
+
+  std::cerr << "created chart" << std::endl;
 
   for (size_t i = 0; i < tokens.size(); ++i) {
     chart.cell(i, 1).emplace_back(tokens[i].second, 1.0);
@@ -171,6 +189,8 @@ int main(int argc, char** argv) {
       chart.update(i, 1, s);
     }
   }
+
+  std::cerr << "initialized chart" << std::endl;
 
   for (size_t j = 2; j <= tokens.size(); ++j) {
     for (size_t i = 0; i <= (tokens.size() - j); ++i) {
@@ -194,6 +214,16 @@ int main(int argc, char** argv) {
             }
           }
         }
+      }
+    }
+  }
+
+  std::cerr << "finished filling chart" << std::endl;
+
+  for (size_t j = 1; j <= tokens.size(); ++j) {
+    for (size_t i = 0; i <= (tokens.size() - j); ++i) {
+      for (auto const &s : chart.cell(i, j)) {
+        std::cout << "(" << i << "," << i + j - 1 << ")	" << s.symbol() << "	" << s.prob() << std::endl;
       }
     }
   }
